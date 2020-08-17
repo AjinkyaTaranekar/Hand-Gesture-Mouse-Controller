@@ -7,6 +7,20 @@ import math
 #import traceback library 
 import traceback
 
+#display corresponding gestures which are in their ranges    
+def count_number_of_finger(l,frame,areacnt,arearatio):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    if l == 6:
+        cv2.putText(frame,'reposition',(0,50), font, 2, (0,0,255), 3, cv2.LINE_AA)
+        pass
+    if areacnt<1000:
+        cv2.putText(frame,'Put hand in the box',(0,50), font, 2, (0,0,255), 3, cv2.LINE_AA)
+    else:
+        if arearatio<12:
+            cv2.putText(frame,str(l-1),(0,50), font, 2, (0,0,255), 3, cv2.LINE_AA)
+        else:
+            cv2.putText(frame,str(l),(0,50), font, 2, (0,0,255), 3, cv2.LINE_AA)
+
 print("Opening Camera")
 # define a video capture object 
 vid = cv2.VideoCapture(0)
@@ -105,8 +119,7 @@ while(True):
             #draw lines around hand
             cv2.line(roi,start, end, [0,255,0], 2)
 
-
-        print("no of defects", l)
+        count_number_of_finger(l+1,frame,areacnt,arearatio)
         cv2.imshow('mask',mask)
         cv2.imshow('frame',frame)
     except:
