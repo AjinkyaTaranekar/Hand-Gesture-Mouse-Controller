@@ -13,8 +13,10 @@ def count_number_of_finger(l,frame,areacnt,arearatio):
     if l == 6:
         cv2.putText(frame,'reposition',(0,50), font, 2, (0,0,255), 3, cv2.LINE_AA)
         pass
+
     if areacnt<1000:
         cv2.putText(frame,'Put hand in the box',(0,50), font, 2, (0,0,255), 3, cv2.LINE_AA)
+    
     else:
         if arearatio<12:
             cv2.putText(frame,str(l-1),(0,50), font, 2, (0,0,255), 3, cv2.LINE_AA)
@@ -41,8 +43,6 @@ while(True):
         cv2.rectangle(frame,(350,100),(700,400),(0,255,0),0)
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
-
-
     # range of the skin colour is defined
         lower_skin = np.array([0,20,75], dtype=np.uint8)
         upper_skin = np.array([45,255,255], dtype=np.uint8)
@@ -50,15 +50,11 @@ while(True):
      #extract skin colour image
         mask = cv2.inRange(hsv, lower_skin, upper_skin)
 
-
-
     #extrapolate the hand to fill dark spots within
         mask = cv2.dilate(mask,kernel,iterations = 4)
 
     #image is blurred using GBlur
         mask = cv2.GaussianBlur(mask,(5,5),100)
-
-
 
     #find contours
         contours,hierarchy= cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
@@ -70,18 +66,17 @@ while(True):
         epsilon = 0.0005*cv2.arcLength(cnt,True)
         approx= cv2.approxPolyDP(cnt,epsilon,True)
 
-
     #make convex hull around hand
         hull = cv2.convexHull(cnt)
 
-     #define area of hull and area of hand
+    #define area of hull and area of hand
         areahull = cv2.contourArea(hull)
         areacnt = cv2.contourArea(cnt)
 
     #find the percentage of area not covered by hand in convex hull
         arearatio=((areahull-areacnt)/areacnt)*100
 
-     #find the defects in convex hull with respect to hand
+    #find the defects in convex hull with respect to hand
         hull = cv2.convexHull(approx, returnPoints=False)
         defects = cv2.convexityDefects(approx, hull)
 
@@ -96,7 +91,6 @@ while(True):
             far = tuple(approx[f][0])
             pt= (100,180)
 
-
             # find length of all sides of triangle
             a = math.sqrt((end[0] - start[0])**2 + (end[1] - start[1])**2)
             b = math.sqrt((far[0] - start[0])**2 + (far[1] - start[1])**2)
@@ -109,7 +103,6 @@ while(True):
 
             # apply cosine rule here
             angle = math.acos((b**2 + c**2 - a**2)/(2*b*c)) * 57
-
 
             # ignore angles > 90 and ignore points very close to convex hull(they generally come due to noise)
             if angle <= 90 and d>30:
@@ -135,6 +128,6 @@ while(True):
 
 # After the loop release the cap object 
 vid.release() 
-# Destroy all the windows 
 
+# Destroy all the windows 
 cv2.destroyAllWindows() 
