@@ -126,29 +126,28 @@ while(True):
             angle = math.acos((b**2 + c**2 - a**2)/(2*b*c)) * 57
 
             # ignore angles > 90 and ignore points very close to convex hull(they generally come due to noise)
-            if angle <= 90 and d>30:
+            if angle <= 90 and d>25:
                 l += 1
                 cv2.circle(roi, far, 3, [255,0,0], -1)
 
             #draw lines around hand
             cv2.line(roi,start, end, [0,255,0], 2)
         
-            west = tuple(cnt[cnt[:, :, 0].argmin()][0]) #gives the co-ordinate of the left extreme of contour
-            east = tuple(cnt[cnt[:, :, 0].argmax()][0]) #above for east i.e right
-            north = tuple(cnt[cnt[:, :, 1].argmin()][0])
-            south = tuple(cnt[cnt[:, :, 1].argmax()][0])
-            centre_x = (west[0]+east[0])/2
-            centre_y = (north[0]+south[0])/2
-
-            if (areacnt in range(8000,18000)): #hand is open
-                mouse.release(Button.left)
-                cv2.circle(frame, (int(centre_x),int(centre_y)), 6, (255,0,0), -1)#plots centre of the area
-                mouse.position = (screenx-(centre_x*screenx/capturex),screeny-(centre_y*screeny/capturey))
-                
-            elif(areacnt in range(2000,7000)): #hand is closed
-                cv2.circle(frame, (int(centre_x),int(centre_y)), 10, (255,255,255), -1)#plots centre of the area
-                mouse.position = (screenx-(centre_x*screenx/capturex), screeny-(centre_y*screeny/capturey))
-                mouse.press(Button.left)
+        west = tuple(cnt[cnt[:, :, 0].argmin()][0]) #gives the co-ordinate of the left extreme of contour
+        east = tuple(cnt[cnt[:, :, 0].argmax()][0]) #above for east i.e right
+        north = tuple(cnt[cnt[:, :, 1].argmin()][0])
+        south = tuple(cnt[cnt[:, :, 1].argmax()][0])
+        centre_x = (west[0]+east[0])/2
+        centre_y = (north[0]+south[0])/2
+        print(areacnt)
+        cv2.circle(frame, (int(centre_x),int(centre_y)), 6, (255,0,0), -1)#plots centre of the area
+        
+        if l == 1:
+            mouse.position = (screenx-(centre_x*screenx/capturex),screeny-(centre_y*screeny/capturey))
+        elif l == 2:
+            mouse.press(Button.left)
+        elif l == 3:
+            mouse.press(Button.right)
 
         count_number_of_finger(l+1,frame,areacnt,arearatio)
         cv2.imshow('mask',mask)
