@@ -7,6 +7,9 @@ import math
 #import traceback library 
 import traceback
 
+import wx
+from pynput.mouse import Button, Controller
+
 #display corresponding gestures which are in their ranges    
 def count_number_of_finger(l,frame,areacnt,arearatio):
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -27,6 +30,27 @@ print("Opening Camera")
 # define a video capture object 
 vid = cv2.VideoCapture(0)
 
+
+mouse = Controller()
+
+app = wx.App(False)
+(screenx,screeny) = wx.GetDisplaySize()
+(capturex,capturey) = (700,400)#captures this size frame
+
+
+vid.set(3,capturex)
+vid.set(4,capturey)
+
+kernelOpen = np.ones((5,5))#if noise are present other than yellow area
+kernelClose = np.ones((20,20)) #if noise are present in yellow area
+
+# range of the skin colour is defined
+lower_skin = np.array([0,20,75], dtype=np.uint8)
+upper_skin = np.array([45,255,255], dtype=np.uint8)
+
+cd = 0
+
+
 while(True): 
 
     try:  
@@ -43,11 +67,8 @@ while(True):
         cv2.rectangle(frame,(350,100),(700,400),(0,255,0),0)
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
-    # range of the skin colour is defined
-        lower_skin = np.array([0,20,75], dtype=np.uint8)
-        upper_skin = np.array([45,255,255], dtype=np.uint8)
-
-     #extract skin colour image
+        
+    #extract skin colour image
         mask = cv2.inRange(hsv, lower_skin, upper_skin)
 
     #extrapolate the hand to fill dark spots within
@@ -111,6 +132,23 @@ while(True):
 
             #draw lines around hand
             cv2.line(roi,start, end, [0,255,0], 2)
+        
+            west = tuple(cnt[cnt[:, :, 0].argmin()][0]) #gives the co-ordinate of the left extreme of contour
+            east = tuple(cnt[cnt[:, :, 0].argmax()][0]) #above for east i.e right
+            north = tuple(cnt[cnt[:, :, 1].argmin()][0])
+            south = tuple(cnt[cnt[:, :, 1].argmax()][0])
+            centre_x = (west[0]+east[0])/2
+            centre_y = (north[0]+south[0])/2
+
+            if (areacnt in range(8000,18000)): #hand is open
+                mouse.release(Button.left)
+                cv2.circle(frame, (int(centre_x),int(centre_y)), 6, (255,0,0), -1)#plots centre of the area
+                mouse.position = (screenx-(centre_x*screenx/capturex),screeny-(centre_y*screeny/capturey))
+                
+            elif(areacnt in range(2000,7000)): #hand is closed
+                cv2.circle(frame, (int(centre_x),int(centre_y)), 10, (255,255,255), -1)#plots centre of the area
+                mouse.position = (screenx-(centre_x*screenx/capturex), screeny-(centre_y*screeny/capturey))
+                mouse.press(Button.left)
 
         count_number_of_finger(l+1,frame,areacnt,arearatio)
         cv2.imshow('mask',mask)
